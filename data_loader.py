@@ -22,12 +22,15 @@ def plot(data: pd.DataFrame) -> None:
     # Set the y-axis label
     plt.ylabel('Measurement 1')
 
-    last_measurement = data['measurement1'].iloc[-1]
     top_position = np.max(data['measurement1'])
-    plt.text(data.index[len(data['time'])/2], top_position, get_avg_measurment(data))
+    plt.text(data.index[len(data['time'])//2], top_position, get_avg_measurment(data))
+    plt.text(data.index[len(data['time'])//2], top_position - 200, get_max_measurment(data))
 
     # Show the plot
     plt.show()
 
 def get_avg_measurment(data: pd.DataFrame) -> str:
     return f'avg: {"{:.2f}".format(np.mean(data["measurement1"]))}'
+
+def get_max_measurment(data: pd.DataFrame) -> str:
+    return f'max: {"{:.2f}".format(np.max(data["measurement1"]))}'
