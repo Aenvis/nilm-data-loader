@@ -40,14 +40,14 @@ def get_number_of_starts(data: pd.DataFrame) -> int:
     avg = get_avg_measurment(data)
     print(avg)
     numberOfStarts = 0
-    isWorking = 0
+    isWorking = False
     timeWorking = 0
     for dt in data["measurement1"]:
         if dt > avg:
-            isWorking = 1
+            isWorking = True
             timeWorking += 1
         elif dt < avg and isWorking and timeWorking > 10:
-            isWorking = 0
+            isWorking = False
             timeWorking = 0
             numberOfStarts += 1
     return numberOfStarts
