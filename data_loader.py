@@ -24,8 +24,11 @@ def plot(data: pd.DataFrame) -> None:
 
     top_position = np.max(data['measurement1'])
     plt.text(data.index[len(data['time'])//2], top_position, get_avg_measurment(data))
+
     plt.text(data.index[len(data['time'])//2], top_position - 200, get_max_measurment(data))
 
+
+    plt.text(data.index[len(data['time']) // 2], top_position - 100, get_number_of_starts(data))
     # Show the plot
     plt.show()
 
@@ -34,3 +37,18 @@ def get_avg_measurment(data: pd.DataFrame) -> str:
 
 def get_max_measurment(data: pd.DataFrame) -> str:
     return f'max: {"{:.2f}".format(np.max(data["measurement1"]))}'
+def get_number_of_starts(data: pd.DataFrame) -> int:
+    avg = np.mean(data["measurement1"])
+    print(avg)
+    numberOfStarts = 0
+    isWorking = 0
+    timeWorking = 0
+    for dt in data["measurement1"]:
+        if dt > avg:
+            isWorking = 1
+            timeWorking += 1
+        elif dt < avg and isWorking and timeWorking > 10:
+            isWorking = 0
+            timeWorking = 0
+            numberOfStarts += 1
+    return numberOfStarts
