@@ -37,7 +37,7 @@ def get_max_measurment(data: pd.DataFrame) -> float:
     return np.max(data["measurement1"])
 
 def get_number_of_starts(data: pd.DataFrame) -> int:
-    avg = np.mean(data["measurement1"])
+    avg = get_avg_measurment(data)
     print(avg)
     numberOfStarts = 0
     isWorking = 0
