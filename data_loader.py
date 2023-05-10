@@ -12,6 +12,29 @@ def load(path: str) -> pd.DataFrame:
     data['time'] = data['date'].dt.time
     return data
 
+def sum_power_values2(csv_paths: list[str]):
+    appliances: list[pd.DataFrame] = []
+
+    time = []
+
+    for _, csv_path in enumerate(csv_paths):
+        appliances.append(load(csv_path))
+    
+    measurment = [0]*len(appliances[0]['time'])
+
+    for _, appliance in enumerate(appliances):
+        for idx, m in enumerate(appliance['measurement1']):
+            measurment[idx] += m
+
+    time = appliances[0]['time']
+
+    return [time, measurment]
+
+def plot_aggregated(data) -> None:
+    plt.plot(data[1])
+    plt.show()
+
+
 def sum_power_values(csv_files, output_file):
     data_column = []
     power_sums = []
@@ -52,11 +75,12 @@ def plot(data: pd.DataFrame) -> None:
     plt.xlabel('Time')
     plt.ylabel('Measurement 1')
 
+    # add statistics to the figure
     top_position = np.max(data['measurement1'])
     plt.text(data.index[len(data['time']) // 2], top_position,      f'avg: {"{:.2f}".format(get_avg_measurement(data))}')
     plt.text(data.index[len(data['time']) // 2],   top_position - 50, f'max: {"{:.2f}".format(get_max_measurment(data))}')
     plt.text(data.index[len(data['time']) // 2],   top_position - 120, f'num of triggers: {get_number_of_starts(data)}')
-    # Show the plot
+    
     plt.show()
 
 def get_avg_measurement(data: pd.DataFrame) -> float:
@@ -65,23 +89,6 @@ def get_avg_measurement(data: pd.DataFrame) -> float:
 def get_max_measurment(data: pd.DataFrame) -> float:
     return np.max(data["measurement1"])
 
-
-
-# def get_number_of_starts(data: pd.DataFrame) -> int:
-#     avg = get_avg_measurement(data)
-#     print(avg)
-#     numberOfStarts = 0
-#     isWorking = False
-#     timeWorking = 0
-#     for dt in data["measurement1"]:
-#         if dt > avg:
-#             isWorking = True
-#             timeWorking += 1
-#         elif dt < avg and isWorking and timeWorking > 10:
-#             isWorking = False
-#             timeWorking = 0
-#             numberOfStarts += 1
-#     return numberOfStarts
 def get_number_of_starts(data: pd.DataFrame) -> int:
     avg = get_avg_measurement(data)
     print(avg)
