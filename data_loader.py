@@ -4,7 +4,14 @@ from typing import List
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pandas import read_parquet, to_datetime
 
+
+def load_enertalk(path: str) -> pd.DataFrame:
+    data = read_parquet(path)
+    # Convert timestamp to hour
+    data['time'] = to_datetime(data['timestamp'], unit='ms').dt.hour
+    return data
 
 def load(path: str) -> pd.DataFrame:
     data = pd.read_csv(path, header=None, delimiter=';', names=['date', 'measurement1', 'measurement8'])
