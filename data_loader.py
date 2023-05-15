@@ -25,6 +25,7 @@ def plot_enertalk(data: pd.DataFrame, device: str, date: str) -> None:
     path = path.replace('xx', date)
 
     aggregated_data = load_enertalk(path)
+    # aggregated_data = filter_data(data)
     aggregated_power = aggregated_data['active_power']
     aggregated_time = to_datetime(aggregated_data['timestamp'], unit='ms').dt.hour
 
@@ -48,15 +49,15 @@ def plot_enertalk(data: pd.DataFrame, device: str, date: str) -> None:
     # Adjusting the spacing between subplots
     plt.subplots_adjust(hspace=0.4)
     plt.suptitle('Aggregated power and ' + device + ' power')
-
+    print(get_avg_measurement_enertalk(data))
+    print(get_max_measurement_enertalk(data))
+    print(get_number_of_starts_enertalk(data))
     # Displaying the plot
     plt.show()
 
 
 
-    print(get_avg_measurement_enertalk(data))
-    print(get_max_measurement_enertalk(data))
-    print(get_number_of_starts_enertalk(data))
+
 
 
 def load(path: str) -> pd.DataFrame:
@@ -141,6 +142,7 @@ def get_max_measurement_enertalk(data: pd.DataFrame) -> float:
 #             numberOfStarts += 1
 #     return numberOfStarts
 def get_number_of_starts(data: pd.DataFrame) -> int:
+
     avg = get_avg_measurement(data)
     print(avg)
 
@@ -166,6 +168,7 @@ def get_number_of_starts(data: pd.DataFrame) -> int:
 
 def get_number_of_starts_enertalk(data: pd.DataFrame) -> int:
     avg = get_avg_measurement_enertalk(data)
+    max = get_max_measurement_enertalk(data)
     # Create a column indicating whether the measurement is above the average or not
     data['is_above_avg'] = data['active_power'] > avg
 
@@ -185,3 +188,13 @@ def get_number_of_starts_enertalk(data: pd.DataFrame) -> int:
             is_working = False
 
     return starts
+
+def filter_data(data: pd.DataFrame):
+    avg = get_avg_measurement_enertalk(data)
+
+    for index, row in data.iterrows():
+        if row['active_power'] > 2 * avg:
+            data.at[index, 'active_power'] = data.at[index - 1, 'active_power']
+
+
+

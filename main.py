@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 def main():
 
 
-    data = dl.load_enertalk(R'data\enertalk\20161006\01_fridge.parquet.gzip')
+    data = dl.load_enertalk(R'data\enertalk\20161002\01_fridge.parquet.gzip')
     # data = dl.load_enertalk(R'data\enertalk\20161006\00_total.parquet.gzip')
-    dl.plot_enertalk(data, "Fridge", '20161006')
+    dl.plot_enertalk(data, "Fridge", '20161002')
 
 
 if __name__ == '__main__':
