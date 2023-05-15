@@ -4,6 +4,60 @@ from typing import List
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pandas import read_parquet, to_datetime
+from sklearn.preprocessing import MinMaxScaler
+
+
+def load_enertalk(path: str) -> pd.DataFrame:
+    data = read_parquet(path)
+
+    # Convert timestamp to hour
+    data['time'] = to_datetime(data['timestamp'], unit='ms').dt.hour
+    return data
+
+
+def plot_enertalk(data: pd.DataFrame, device: str, date: str) -> None:
+    # Set the index to the 'date' column
+    # data = data.set_index('time')
+
+    # Extract the 'active_power' and 'hour' column data
+    path = 'data/enertalk/xx/00_total.parquet.gzip'
+    path = path.replace('xx', date)
+
+    aggregated_data = load_enertalk(path)
+    # aggregated_data = filter_data(data)
+    aggregated_power = aggregated_data['active_power']
+    aggregated_time = to_datetime(aggregated_data['timestamp'], unit='ms').dt.hour
+
+    active_power = data['active_power']
+    hour = data['time']
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, sharey=False)
+
+    ax1.plot(hour, active_power)
+    ax1.set_xlabel('Hour')
+    ax1.set_ylabel('Active Power: ' + device)
+
+    # Plotting the second subplot
+    ax2.plot(aggregated_time, aggregated_power)
+    ax2.set_xlabel('Hour')
+    ax2.set_ylabel('Aggregated Power')
+
+    # Setting the y-axis range of the second subplot
+    ax1.set_ylim(0, max(aggregated_power))
+
+    # Adjusting the spacing between subplots
+    plt.subplots_adjust(hspace=0.4)
+    plt.suptitle('Aggregated power and ' + device + ' power')
+    print(get_avg_measurement_enertalk(data))
+    print(get_max_measurement_enertalk(data))
+    print(get_number_of_starts_enertalk(data))
+    # Displaying the plot
+    plt.show()
+
+
+
+
 
 
 def load(path: str) -> pd.DataFrame:
@@ -65,6 +119,11 @@ def get_avg_measurement(data: pd.DataFrame) -> float:
 def get_max_measurment(data: pd.DataFrame) -> float:
     return np.max(data["measurement1"])
 
+def get_avg_measurement_enertalk(data: pd.DataFrame) -> float:
+    return np.mean(data["active_power"])
+
+def get_max_measurement_enertalk(data: pd.DataFrame) -> float:
+    return np.max(data["active_power"])
 
 
 # def get_number_of_starts(data: pd.DataFrame) -> int:
@@ -83,6 +142,7 @@ def get_max_measurment(data: pd.DataFrame) -> float:
 #             numberOfStarts += 1
 #     return numberOfStarts
 def get_number_of_starts(data: pd.DataFrame) -> int:
+
     avg = get_avg_measurement(data)
     print(avg)
 
@@ -105,3 +165,36 @@ def get_number_of_starts(data: pd.DataFrame) -> int:
             is_working = False
 
     return starts
+
+def get_number_of_starts_enertalk(data: pd.DataFrame) -> int:
+    avg = get_avg_measurement_enertalk(data)
+    max = get_max_measurement_enertalk(data)
+    # Create a column indicating whether the measurement is above the average or not
+    data['is_above_avg'] = data['active_power'] > avg
+
+    # Initialize variables
+    is_working = False
+    starts = 0
+    consecutive_count = 0
+
+    for above_avg in data['is_above_avg']:
+        if above_avg:
+            consecutive_count += 1
+            if not is_working and consecutive_count >= 10*15:
+                is_working = True
+                starts += 1
+        else:
+            consecutive_count = 0
+            is_working = False
+
+    return starts
+
+def filter_data(data: pd.DataFrame):
+    avg = get_avg_measurement_enertalk(data)
+
+    for index, row in data.iterrows():
+        if row['active_power'] > 2 * avg:
+            data.at[index, 'active_power'] = data.at[index - 1, 'active_power']
+
+
+
